@@ -1,4 +1,4 @@
-from location_ids_distance_1_0 import get_input
+from l1_0_location_ids_distance import get_input
 
 LEVEL = '1.1'
 

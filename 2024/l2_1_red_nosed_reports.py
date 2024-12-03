@@ -1,4 +1,4 @@
-from red_nosed_reports_2_0 import get_input
+from l2_0_red_nosed_reports import get_input
 
 LEVEL = '2.1'
 
