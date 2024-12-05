@@ -3,7 +3,8 @@ import os
 
 def get_input_file(level: str) -> str:
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    input_dir = os.path.join(current_dir, 'input')
+    day_dir = f'day_{level.split(".")[0]}'
+    input_dir = os.path.join(current_dir, day_dir, 'input')
     return os.path.join(input_dir, f'{level}.txt')
 
 

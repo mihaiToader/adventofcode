@@ -1,6 +1,6 @@
 import re
 
-from input_output import read_level_input
+from y2024.input_output import read_level_input
 from l3_0_mull_it_over import compute_mul
 
 LEVEL = '3.1'
