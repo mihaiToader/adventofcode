@@ -170,11 +170,11 @@ const Map = () => {
 
             if (keyPressed.current['l']) {
                 if (keyPressed.current['s']) {
-                    setLoopCounter((prev) => prev >= 1 ? prev - 1 : prev);
+                    setLoopCounter((prev) => +prev >= 1 ? +prev - 1 : prev);
                     showLoop();
                 }
                 if (keyPressed.current['w']) {
-                    setLoopCounter((prev) => prev < loops.length - 2 ? prev + 1 : prev);
+                    setLoopCounter((prev) => +prev < loops.length - 2 ? +prev + 1 : prev);
                     showLoop();
                 }
             }
