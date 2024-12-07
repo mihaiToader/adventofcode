@@ -41,6 +41,7 @@ const Map = () => {
     const [patrolMap, setPatrolMap] = useState(null);
     const [loops, setLoops] = useState(null);
     const [loopCounter, setLoopCounter] = useState(0);
+    const keyPressed = useRef({});
 
     useEffect(() => {
         fetch('http://localhost:3000/patrol/').then(res => res.json()).then(data => {
@@ -162,6 +163,29 @@ const Map = () => {
         setPatrolMap(structuredClone(patrolMapRef.current))
     }
 
+    useEffect(() => {
+        document.onkeydown = (keyDownEvent) => {
+            keyDownEvent.preventDefault();
+            keyPressed.current[keyDownEvent.key] = true;
+
+            if (keyPressed.current['l']) {
+                if (keyPressed.current['s']) {
+                    setLoopCounter((prev) => prev >= 1 ? prev - 1 : prev);
+                    showLoop();
+                }
+                if (keyPressed.current['w']) {
+                    setLoopCounter((prev) => prev < loops.length - 2 ? prev + 1 : prev);
+                    showLoop();
+                }
+            }
+        };
+
+        document.onkeyup = (keyUpEvent) => {
+            keyUpEvent.preventDefault();
+            delete keyPressed.current[keyUpEvent.key]
+        };
+    }, [loops, showLoop])
+
     if (!patrolMap) {
         return null;
     }
@@ -209,6 +233,7 @@ const Map = () => {
                             type="button" onClick={showLoop}>
                             Show Loop
                         </button>
+                        <div className="mt-2 ml-2">L + S (down) | L + W (up)</div>
                     </>
                 )}
             </div>
