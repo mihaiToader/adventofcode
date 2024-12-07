@@ -3,7 +3,7 @@ import copy
 from l6_1_guard_gallivant import get_input, find_guard_position, is_inside_of_map, print_lab_map, is_obstacle, turn_90_degrees
 
 
-LEVEL = '6.0'
+LEVEL = '6.1'
 PATROL = LEVEL.split('.')[1]
 
 
@@ -76,7 +76,7 @@ def generate_patrol(lab_map):
 
 def visit_space_hash(lab_map, position):
     guard_orientation = lab_map[position[0]][position[1]]
-    return f'{position[0]}{position[1]}{guard_orientation}'
+    return f'{position[0]}-{position[1]}-{guard_orientation}'
 
 
 def is_loop_for_obstacle(lab_map, starting_position, obstacle_position):
