@@ -1,122 +1,125 @@
 import copy
 
-from l6_1_guard_gallivant import get_input, find_guard_position, is_inside_of_map, print_lab_map
-
-LEVEL = '6.1'
+from l6_1_guard_gallivant import get_input, find_guard_position, is_inside_of_map, print_lab_map, is_obstacle, turn_90_degrees
 
 
-def last_from_lab_map_coord(lab_map, row, col) -> str:
-    el = lab_map[row][col]
-    return el[len(el) - 1]
+LEVEL = '6.0'
+PATROL = LEVEL.split('.')[1]
 
 
-def last_from_lab_map(lab_map, position) -> str:
+def print_map(lab_map):
+    with open(f'./output/patrol_{PATROL}.txt', 'w') as f:
+        f.writelines('\n'.join(
+            [''.join([''.join(item) if isinstance(item, list) else item for item in row]) for row in
+             lab_map]))
+        f.writelines('\n-\n')
+
+
+def print_patrol(guard_patrol):
+    with open(f'./output/patrol_{PATROL}.txt', 'a') as f:
+        f.writelines(','.join(['|'.join([str(coor[0]), str(coor[1])]) for coor in guard_patrol]))
+        f.writelines('\n-\n')
+
+
+def print_loops(path, obstacle):
+    path_with_obstacle_first = [obstacle, *path]
+    with open(f'./output/patrol_{PATROL}.txt', 'a') as f:
+        f.writelines(','.join(['|'.join([str(coor[0]), str(coor[1])]) for coor in path_with_obstacle_first]))
+        f.writelines('\n')
+
+
+def make_step(lab_map, position):
     row = position[0]
     col = position[1]
-    return last_from_lab_map_coord(lab_map, row, col)
-
-
-def is_obstacle(lab_map, position):
-    return last_from_lab_map(lab_map, position) in ['0', '#']
-
-
-def go_straight(lab_map, position):
-    row = position[0]
-    col = position[1]
-    guard = last_from_lab_map_coord(lab_map, row, col)
-    if guard == '^':
-        return [row - 1, col]
-    if guard == '>':
-        return [row, col + 1]
-    if guard == 'v':
-        return [row + 1, col]
-    if guard == '<':
-        return [row, col - 1]
-
-
-def turn_90_degrees(lab_map, position):
-    row = position[0]
-    col = position[1]
-    guard = last_from_lab_map_coord(lab_map, row, col)
+    guard = lab_map[row][col]
 
     new_position = None
     if guard == '^':
-        new_position = '>'
-    elif guard == '>':
-        new_position = 'v'
-    elif guard == 'v':
-        new_position = '<'
-    elif guard == '<':
-        new_position = '^'
+        new_position = [row - 1, col]
+    if guard == '>':
+        new_position = [row, col + 1]
+    if guard == 'v':
+        new_position = [row + 1, col]
+    if guard == '<':
+        new_position = [row, col - 1]
 
-    lab_map[row][col][len(lab_map[row][col]) - 1] = new_position
-    return lab_map
+    if is_inside_of_map(lab_map, new_position) and is_obstacle(lab_map, new_position):
+        return make_step(turn_90_degrees(lab_map, position), position)
+    return new_position
 
 
 def patrol(lab_map, position):
-    new_position = go_straight(lab_map, position)
+    new_position = make_step(lab_map, position)
     if not is_inside_of_map(lab_map, new_position):
-        return [lab_map, new_position, False, False]
-
-    if is_obstacle(lab_map, new_position):
-        return [turn_90_degrees(lab_map, position), position, True, False]
+        lab_map[position[0]][position[1]] = 'X'
+        return [lab_map, new_position]
 
     row = new_position[0]
     col = new_position[1]
 
-    if last_from_lab_map(lab_map, new_position) == '.':
-        lab_map[row][col] = [last_from_lab_map(lab_map, position)]
-    elif last_from_lab_map(lab_map, position) in lab_map[row][col]:
-        return [lab_map, new_position, False, True]
-    else:
-        lab_map[row][col].append(last_from_lab_map(lab_map, position))
-
-    return [lab_map, new_position, False, False]
+    lab_map[row][col] = lab_map[position[0]][position[1]]
+    lab_map[position[0]][position[1]] = 'X'
+    return [lab_map, new_position]
 
 
-def is_loop(lab_map, guard_position, obstacle_position):
-    new_lab_map = copy.deepcopy(lab_map)
-    new_lab_map[obstacle_position[0]][obstacle_position[1]] = ['0']
-    new_lab_map = turn_90_degrees(new_lab_map, guard_position)
-
-    while is_inside_of_map(new_lab_map, guard_position):
-        [new_lab_map, guard_position, _, is_loop_here] = patrol(new_lab_map, guard_position)
-        if is_loop_here:
-            return True
-
-        if not is_inside_of_map(new_lab_map, guard_position):
-            return False
-
-    return False
-
-
-def make_lab_map_elements_lists(lab_map):
-    return [[[el] for el in row] for row in lab_map]
-
-
-#495 too low
-#2094 too high
-def solve():
-    lab_map = get_input(LEVEL)
+def generate_patrol(lab_map):
     guard_position = find_guard_position(lab_map)
 
-    lab_map = make_lab_map_elements_lists(lab_map)
-    distinct_obstructions = 0
+    visited = [guard_position]
     while is_inside_of_map(lab_map, guard_position):
-        if guard_position[0] % 10 == 0:
-            print(guard_position)
-        [lab_map, obstacle_position, rotate_guard, _] = patrol(lab_map, guard_position)
-        if not is_inside_of_map(lab_map, obstacle_position):
-            break
+        [lab_map, guard_position] = patrol(lab_map, guard_position)
+        visited.append(guard_position)
 
-        if rotate_guard:
-            continue
+    print_patrol(visited)
+    return lab_map
 
-        if is_loop(lab_map, guard_position, obstacle_position):
-            distinct_obstructions += 1
-        guard_position = obstacle_position
 
-    print(distinct_obstructions)
+def visit_space_hash(lab_map, position):
+    guard_orientation = lab_map[position[0]][position[1]]
+    return f'{position[0]}{position[1]}{guard_orientation}'
+
+
+def is_loop_for_obstacle(lab_map, starting_position, obstacle_position):
+    guard_position = copy.deepcopy(starting_position)
+    loop_map = copy.deepcopy(lab_map)
+    loop_map[obstacle_position[0]][obstacle_position[1]] = '#'
+    visited = set()
+    visited.add(visit_space_hash(loop_map, guard_position))
+    path = [guard_position]
+    while True:
+        [loop_map, guard_position] = patrol(loop_map, guard_position)
+        path.append(guard_position)
+        if not is_inside_of_map(loop_map, guard_position):
+            return False
+
+        visit = visit_space_hash(loop_map, guard_position)
+        if visit in visited:
+            print_loops(path, obstacle_position)
+            return True
+
+        visited.add(visit)
+
+
+# 41
+def solve():
+    lab_map = get_input(LEVEL)
+    print_map(lab_map)
+
+    guard_position = find_guard_position(lab_map)
+
+    walked_map = copy.deepcopy(lab_map)
+    generate_patrol(walked_map)
+
+    steps = 0
+    loops = 0
+    for i in range(0, len(walked_map)):
+        for j in range(0, len(walked_map[0])):
+            if walked_map[i][j] == 'X' and [i, j] != guard_position:
+                if is_loop_for_obstacle(lab_map, guard_position, [i, j]):
+                    loops += 1
+                steps += 1
+
+    print(loops)
 
 
 if __name__ == "__main__":
