@@ -12,21 +12,19 @@ def print_robots(wide, tall, robots, seconds):
         if robots_map[i][j] == ' ':
             robots_map[i][j] = 'W'
 
-    with open(f'./map.txt', 'a') as f:
+    with open(f'./tree.txt', 'w') as f:
         f.writelines('\n'.join(
             [''.join([''.join(item) for item in row]) for row in robots_map]))
         f.writelines(str(seconds))
         f.writelines('\n-\n')
 
 
-
-def is_bottom_line_full(wide, tall, robots):
-    count = 0
-    bottom_line = set()
-    for [p, v] in robots:
-        if p[1] == tall - 1:
-            bottom_line.add(p[0])
-    return len(bottom_line) == wide
+def are_robots_on_unique_position(robots):
+    for i in range(len(robots) - 1):
+        for j in range(i + 1, len(robots)):
+            if robots[i][0] == robots[j][0]:
+                return False
+    return True
 
 
 def solve():
@@ -41,9 +39,8 @@ def solve():
     while True:
         move_robots(wide, tall, robots)
         seconds += 1
-        # print_robots_console(wide, tall, robots)
-        print_robots(wide, tall, robots, seconds)
-        if is_bottom_line_full(wide, tall, robots):
+
+        if are_robots_on_unique_position(robots):
             print_robots(wide, tall, robots, seconds)
             print(seconds)
             break
