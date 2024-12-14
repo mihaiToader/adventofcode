@@ -3,61 +3,44 @@ from l12_1_garden_groups import get_input, DIRECTIONS, is_in_garden
 LEVEL = '12.0'
 
 
-def compute_sides(outside_cords):
-    sides = 1
-    [r, c] = outside_cords[0]
-    for i in range(1, len(outside_cords)):
-        [row, col] = outside_cords[i]
-
-        if [r, c] == [row, col]:
-            [r, c] = [row, col]
-            sides += 1
-            continue
-
-        if r == row and (c == col - 1 or c == col + 1):
-            [r, c] = [row, col]
-            continue
-
-        if c == col and (r == row - 1 or r == row + 1):
-            [r, c] = [row, col]
-            continue
-
-        sides += 1
-        [r, c] = [row, col]
-
-    return sides
+def compute_sides(garden, visited, corners):
+    return 1
 
 
 def measure_crops(garden, row, column):
     area = 0
-    perimeter = 0
     plant = garden[row][column]
     stack = [[row, column]]
     visited = plant + '-'
-    outside_coords = []
+    corners = dict(
+        min_row=row,
+        max_row=row,
+        min_column=column,
+        max_column=column,
+    )
     while len(stack) > 0:
         [r, c] = stack.pop()
 
         if not is_in_garden(garden, r, c):
-            perimeter += 1
-            outside_coords.append([r, c])
             continue
 
         if garden[r][c] == visited:
             continue
 
         if garden[r][c] != plant:
-            perimeter += 1
-            outside_coords.append([r, c])
             continue
 
         area += 1
         garden[r][c] = visited
+        corners['min_row'] = min(corners['min_row'], r)
+        corners['max_row'] = max(corners['max_row'], r)
+        corners['min_column'] = min(corners['min_column'], c)
+        corners['max_column'] = max(corners['max_column'], c)
         for [row_direction, column_direction] in DIRECTIONS:
             stack.append([r + row_direction, c + column_direction])
 
-    print(outside_coords)
-    sides = compute_sides(outside_coords)
+    print(corners)
+    sides = compute_sides(garden, visited, corners)
     return [area, sides]
 
 
